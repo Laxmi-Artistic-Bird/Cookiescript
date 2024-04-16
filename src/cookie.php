@@ -25,7 +25,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
 
 <div id="gdprcript_injected"><a></a>
-<div class="wrap" style=""><a>
+<div class="wrap" style="<?= (isset($_COOKIE['useraction']) && $_COOKIE['useraction'] === true) ? 'display:none' : '';?>"><a>
         <div id="gdprcript_header">Este sitio web utiliza cookies</div>
     </a>
     <div id="gdprcript_description"><a>

@@ -374,12 +374,14 @@ document.addEventListener('DOMContentLoaded', function () {
   function acceptCookies() {
     var Type = 'accept';
     userPreferences('true', Type);
+    setUserCookie();
     showbadge();
   }
 
   function saveCookies() {
     var Type = 'save';
-    userPreferences('', Type)
+    userPreferences('', Type);
+    setUserCookie();
     storeUserPreferences();
   }
 
@@ -493,6 +495,7 @@ document.addEventListener('DOMContentLoaded', function () {
     setAeon(consentType);
     // sendConsentDataToServer(consentType);
     saveUserPreferences(consentType, Type);
+    setUserCookie();
     showbadge();
   }
 
@@ -584,6 +587,20 @@ document.addEventListener('DOMContentLoaded', function () {
       injectedElement.style.height = '320px';
       injectedElement.style.width = '320px';
     }
+  }
+
+  function setUserCookie() {
+    $.ajax({
+      type: "POST",
+      url: apiUrl + 'useraction.php',
+      data: { consentType: consentType, Type: Type },
+      success: function (response) {
+        //  console.log(response); // Log the server's response
+      },
+      error: function (error) {
+        console.error("An error occurred:", error);
+      }
+    });
   }
 
   function getIpAddressAndUserAgent() {
