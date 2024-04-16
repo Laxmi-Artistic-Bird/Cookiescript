@@ -12,7 +12,6 @@ document.addEventListener('DOMContentLoaded', function () {
     apiUrl = '/vendor/artisticbird/cookiescript/src/public/cookiesscript/';
   }
 
- 
 
   Customcookies();
 
@@ -405,15 +404,13 @@ document.addEventListener('DOMContentLoaded', function () {
     fileData.forEach(cookie => {
       const category = cookie.category || 'Uncategorized';
       if (userPreferences[category]) {
-        // Set the cookie in the browser
-        // You can use the document.cookie method to set individual cookies
-        // Here, I'm just logging the cookie for demonstration purposes
         // console.log(`Setting cookie for ${category}:`, cookie);
       } else {
         // Block or do not set the cookie for this category
         console.log(`Not setting cookie for ${category}:`, cookie);
       }
     });
+
     checkboxes.forEach(checkbox => {
       if (checkbox.checked) {
         // Get the category name associated with the checkbox
@@ -435,7 +432,6 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     });
   }
-
 
 
   function deleteCookies() {
