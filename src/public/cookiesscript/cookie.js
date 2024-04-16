@@ -593,7 +593,7 @@ document.addEventListener('DOMContentLoaded', function () {
     $.ajax({
       type: "POST",
       url: apiUrl + 'useraction.php',
-      data: { consentType: consentType, Type: Type },
+      data: { 'useraction':true },
       success: function (response) {
         //  console.log(response); // Log the server's response
       },
