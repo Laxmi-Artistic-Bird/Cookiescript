@@ -367,6 +367,7 @@ document.addEventListener('DOMContentLoaded', function () {
     deleteAllCookiesExceptRejected();
     deleteCookies();
     showbadge();
+    setUserCookie();
   }
 
 
@@ -381,7 +382,6 @@ document.addEventListener('DOMContentLoaded', function () {
   function saveCookies() {
     var Type = 'save';
     userPreferences('', Type);
-    setUserCookie();
     storeUserPreferences();
   }
 
