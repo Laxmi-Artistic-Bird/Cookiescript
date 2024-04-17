@@ -5,10 +5,8 @@ document.addEventListener('DOMContentLoaded', function () {
   var apiUrl = '';
 
   if (platformtype == 'Laravel') {
-    // We're in Laravel, use Laravel's route function to generate the URL
-    apiUrl = '/cookiesscript/'; // Define the named route in Laravel
+    apiUrl = '/cookiesscript/';
   } else {
-    // We're not in Laravel, use a relative path for the URL
     apiUrl = '/vendor/artisticbird/cookiescript/src/public/cookiesscript/';
   }
 
@@ -26,8 +24,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     if (consentObject.Rendimiento === true && consentObject.Marketing === true) {
-      // console.log('Rendimiento, Marketing, and Necesario consent given. Google Analytics enabled.');
-
       window['ga-disable-' + gtmId] = false;
       window['ga-disable_XDNJGXBN4C'] = false;
       window['ga-disable_gcl_au'] = false;
@@ -43,7 +39,6 @@ document.addEventListener('DOMContentLoaded', function () {
       window['ga-disable_gid'] = true;
       window['ga-disable-GTM-5CLDPS7'] = true;
       window['ga-disable-UA-12959177-5'] = true;
-      // console.log('Rendimiento, Marketing, or Necesario consent not given. Google Analytics blocked.');
     }
   }
 
@@ -194,8 +189,6 @@ document.addEventListener('DOMContentLoaded', function () {
           }
         }
 
-
-        // console.log('consentDatas', consentDatas);
         // Create a label for the checkbox
         const label = document.createElement('label');
         label.htmlFor = `gdprcript_category_${category}`;
@@ -334,14 +327,10 @@ document.addEventListener('DOMContentLoaded', function () {
         document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; domain=." + getDomainFromURL() + "; secure; samesite=strict";
       }
     }
-    //location.reload();
   }
 
 
-  //rejectCookies();
   function rejectCookies() {
-
-    // Additional logic as needed
     var consentType = {
       'Rendimiento': false,
       'Marketing': false,
@@ -378,7 +367,6 @@ document.addEventListener('DOMContentLoaded', function () {
   function storeUserPreferences() {
     const checkboxes = document.querySelectorAll('.gdprcript_checkbox_input');
     const userPreferences = {};
-    //console.log(checkboxes);
     checkboxes.forEach(checkbox => {
       if (checkbox.checked) {
         userPreferences[checkbox.value] = true;
@@ -390,30 +378,18 @@ document.addEventListener('DOMContentLoaded', function () {
     fileData.forEach(cookie => {
       const category = cookie.category || 'Uncategorized';
       if (userPreferences[category]) {
-        // console.log(`Setting cookie for ${category}:`, cookie);
       } else {
-        // Block or do not set the cookie for this category
         console.log(`Not setting cookie for ${category}:`, cookie);
       }
     });
 
     checkboxes.forEach(checkbox => {
       if (checkbox.checked) {
-        // Get the category name associated with the checkbox
         const category = checkbox.value;
-
-        // Find cookies in the data.txt file that match the selected category
         const cookiesInCategory = fileData.filter(cookie => cookie.category === category);
-
-        // Set cookies in the browser for each cookie in this category
         cookiesInCategory.forEach(cookie => {
-          // Construct the cookie string
           const cookieString = `${cookie.name}=${cookie.value}; path=/; expires=Thu, 31 Dec 2099 23:59:59 UTC`;
-
-          // Set the cookie
           document.cookie = cookieString;
-
-
         });
       }
     });
@@ -425,30 +401,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
     checkboxes.forEach(checkbox => {
       if (checkbox.checked && checkbox.value !== 'Necesario') {
-        // Get the category name associated with the checkbox
         const category = checkbox.value;
-
-        // Find cookies in the data.txt file that match the selected category
         const cookiesInCategory = fileData.filter(cookie => cookie.category === category);
-
-        // Delete cookies in the browser for each cookie in this category
         cookiesInCategory.forEach(cookie => {
-          // Construct the cookie string with an expired date
           const cookieString = `${cookie.name}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC`;
-
-          // Delete the cookie by setting an expired date
           document.cookie = cookieString;
         });
-
-        // Uncheck the checkbox
-
         checkbox.checked = false;
-
-        // localStorage.setItem(checkbox.value, 'false');
       }
     });
-
-    // Optionally, you can perform additional actions after deleting cookies if needed.
   }
 
 
@@ -477,7 +438,6 @@ document.addEventListener('DOMContentLoaded', function () {
       });
 
     setAeon(consentType);
-    // sendConsentDataToServer(consentType);
     saveUserPreferences(consentType, Type);
     setUserCookie();
     showbadge();
@@ -486,9 +446,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
   function setAeon(consentType) {
-
     document.cookie = `aeon-consent=consentid:SFdTT1lNNkdpQ2J5OUE4bXY1WWZOWHo1cDlnbExaSF=${JSON.stringify(consentType)}; expires=Thu, 31 Dec 2099 23:59:59 UTC; path=/`;
-
   }
 
 
@@ -545,25 +503,19 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function manageGDscript() {
-
-    // Get elements by their IDs
     const manageButton = document.getElementById('gdprcript_manage');
     const injectedElement = document.getElementById('gdprcript_injected');
     const cookieTableWrap = document.getElementById('gdprcript_cookietablewrap');
 
-    // Toggle visibility of span elements inside '#gdprcript_manage'
     const spanElements = document.querySelectorAll('#gdprcript_manage>span');
     spanElements.forEach(span => {
       span.style.display = (span.style.display === 'none') ? 'inline' : 'none';
     });
 
-    // Toggle 'active' class on '#gdprcript_injected'
     injectedElement.classList.toggle('active');
 
-    // Toggle visibility of '#gdprcript_cookietablewrap'
     cookieTableWrap.style.display = (cookieTableWrap.style.display === 'none' || cookieTableWrap.style.display === '') ? 'block' : 'none';
 
-    // Check if '#gdprcript_injected' has 'active' class and adjust its height and width accordingly
     if (injectedElement.classList.contains('active')) {
       injectedElement.style.height = '420px';
       injectedElement.style.width = '800px';
@@ -623,6 +575,4 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
   }
-
-
 });
