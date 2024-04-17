@@ -16,25 +16,9 @@ document.addEventListener('DOMContentLoaded', function () {
   Customcookies();
 
   function Customcookies() {
-    var cookies = document.cookie.split(';').map(cookie => cookie.trim());
     var consentObject = {};
-
-    cookies.forEach(cookie => {
-      if (cookie.startsWith('aeon-consent=')) {
-        var consentString = cookie.substring('aeon-consent='.length); // Extract only the JSON string
-        try {
-          var jsonStringStartIndex = consentString.indexOf('{');
-          if (jsonStringStartIndex !== -1) {
-            consentString = consentString.substring(jsonStringStartIndex);
-          }
-
-          consentObject = JSON.parse(decodeURIComponent(consentString));
-        } catch (error) {
-          console.error('Error parsing aeon-consent cookie:', error);
-        }
-      }
-    });
-
+    consentObject = getConsentFromCookie();
+    
     var existingGtmScript = document.querySelector('script[src*="googletagmanager.com/gtm.js"]');
     var gtmId='';
     if (existingGtmScript) {
@@ -77,12 +61,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     if (consentObject.Rendimiento !== true && consentObject.Marketing !== true) {
-      consentType = {
-        'Rendimiento': false,
-        'Marketing': false,
-        'Necesario': true
-      };
-      setAeon(consentType);
+        consentType = {
+          'Rendimiento': false,
+          'Marketing': false,
+          'Necesario': true
+        };
+        setAeon(consentType);
     }
   }
 
@@ -100,7 +84,7 @@ document.addEventListener('DOMContentLoaded', function () {
     return false;
   }
 
-  var cookieName = 'consent';
+  var cookieName = 'type';
   if (checkCookie(cookieName)) {
     showbadge();
   }
@@ -595,13 +579,24 @@ document.addEventListener('DOMContentLoaded', function () {
       url: apiUrl + 'useraction.php',
       data: { 'useraction':true },
       success: function (response) {
-        //  console.log(response); // Log the server's response
+        setCookie('type', 'useraction',7);
       },
       error: function (error) {
         console.error("An error occurred:", error);
       }
     });
   }
+
+  function setCookie(cookieName,cookieValue,days){
+    var expires = "";
+    if (days) {
+        var date = new Date();
+        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+        expires = "; expires=" + date.toUTCString();
+    }
+    document.cookie = cookieName + "=" + cookieValue + expires + "; path=/";
+  }
+
 
   function getIpAddressAndUserAgent() {
     // Returning a Promise to handle asynchronous operations
