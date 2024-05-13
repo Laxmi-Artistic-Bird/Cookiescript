@@ -323,9 +323,9 @@ document.addEventListener('DOMContentLoaded', function () {
       var name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
 
       // Exclude the 'cookiesRejected' cookie
-      if (name !== 'cookiesRejected') {
+      // if (name !== 'cookiesRejected') {
         document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; domain=." + getDomainFromURL() + "; secure; samesite=strict";
-      }
+      // }
     }
   }
 
