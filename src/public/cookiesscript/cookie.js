@@ -23,7 +23,10 @@ document.addEventListener('DOMContentLoaded', function () {
       gtmId = getGtmIdFromScriptSource(existingGtmScript.src);
     }
 
+
+
     if (consentObject.Rendimiento === true && consentObject.Marketing === true) {
+ 
       window['ga-disable-' + gtmId] = false;
       window['ga-disable_XDNJGXBN4C'] = false;
       window['ga-disable_gcl_au'] = false;
@@ -32,6 +35,7 @@ document.addEventListener('DOMContentLoaded', function () {
       window['ga-disable_gid'] = false;
       window['ga-disable-UA-12959177-5'] = false;
     } else {
+  
       window['ga-disable-' + gtmId] = true;
       window['ga-disable_gcl_au'] = true;
       window['ga-disable_ga'] = true;
@@ -64,6 +68,7 @@ document.addEventListener('DOMContentLoaded', function () {
         setAeon(consentType);
     }
   }
+
 
 
   function checkCookie(cookieName) {
@@ -104,6 +109,9 @@ document.addEventListener('DOMContentLoaded', function () {
     .catch(error => {
       console.error('Error fetching data:', error);
     });
+
+
+    
 
 
   var manageGDscriptbtn = document.getElementById("gdprcript_manage");
@@ -206,8 +214,30 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
 
-  function getConsentFromCookie() {
+  // function getConsentFromCookie() {
 
+  //   var cookies = document.cookie.split(';').map(cookie => cookie.trim());
+  //   var consentObject = {};
+
+  //   cookies.forEach(cookie => {
+  //     if (cookie.startsWith('aeon-consent=')) {
+  //       var consentString = cookie.substring('aeon-consent='.length); // Extract only the JSON string
+  //       try {
+  //         var jsonStringStartIndex = consentString.indexOf('{');
+  //         if (jsonStringStartIndex !== -1) {
+  //           consentString = consentString.substring(jsonStringStartIndex);
+  //         }
+  //         consentObject = JSON.parse(decodeURIComponent(consentString));
+  //       } catch (error) {
+  //         console.error('Error parsing aeon-consent cookie:', error);
+  //       }
+  //     }
+  //   });
+
+  //   return consentObject;
+  // }
+
+  function getConsentFromCookie() {
     var cookies = document.cookie.split(';').map(cookie => cookie.trim());
     var consentObject = {};
 
@@ -215,17 +245,14 @@ document.addEventListener('DOMContentLoaded', function () {
       if (cookie.startsWith('aeon-consent=')) {
         var consentString = cookie.substring('aeon-consent='.length); // Extract only the JSON string
         try {
-          var jsonStringStartIndex = consentString.indexOf('{');
-          if (jsonStringStartIndex !== -1) {
-            consentString = consentString.substring(jsonStringStartIndex);
-          }
-          consentObject = JSON.parse(decodeURIComponent(consentString));
+          consentString = convertStringToJson(consentString);
+          consentObject= consentString;
         } catch (error) {
           console.error('Error parsing aeon-consent cookie:', error);
         }
       }
     });
-
+   
     return consentObject;
   }
 
@@ -325,7 +352,7 @@ document.addEventListener('DOMContentLoaded', function () {
       // Exclude the 'cookiesRejected' cookie
       // if (name !== 'cookiesRejected') {
         document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; domain=." + getDomainFromURL() + "; secure; samesite=strict";
-      // }
+      // /}
     }
   }
 
@@ -341,6 +368,10 @@ document.addEventListener('DOMContentLoaded', function () {
     deleteCookies();
     showbadge();
     setUserCookie();
+    // dataLayer.push({
+    //   'event': 'rejectEvent',
+    //   'action': 'reject'
+    // });
   }
 
 
@@ -350,51 +381,98 @@ document.addEventListener('DOMContentLoaded', function () {
     userPreferences('true', Type);
     setUserCookie();
     showbadge();
+    // dataLayer.push({
+    //   'event': 'acceptEvent',
+    //   'action': 'accept'
+    // });
   }
 
   function saveCookies() {
     var Type = 'save';
     userPreferences('', Type);
-    storeUserPreferences();
+    // storeUserPreferences();
+
+    // dataLayer.push({
+    //   'event': 'saveEvent',
+    //   'action': 'save'
+    // });
+
   }
 
-  function getDomainFromURL() {
-    var domain = window.location.hostname;
-    return domain.startsWith("www.") ? domain.substring(4) : domain;
-  }
+ 
+  // function storeUserPreferences() {
+  //   const checkboxes = document.querySelectorAll('.gdprcript_checkbox_input');
+   
+  //   const userPreferences = {};
+  //   checkboxes.forEach(checkbox => {
+  //     if (checkbox.checked) {
+  //       userPreferences[checkbox.value] = true;
+  //     }
+  //   });
 
 
-  function storeUserPreferences() {
+  //   console.log('userPreferences',userPreferences);
+
+  //   fileData.forEach(cookie => {
+  //     const category = cookie.category || 'Uncategorized';
+  //     if (userPreferences[category]) {
+  //     } else {
+  //       console.log(`Not setting cookie for ${category}:`, cookie);
+  //     }
+  //   });
+
+  //   checkboxes.forEach(checkbox => {
+  //     if (checkbox.checked) {
+  //       // console.log('checkboxes',checkbox);
+  //       const category = checkbox.value;
+  //       const cookiesInCategory = fileData.filter(cookie => cookie.category === category);
+  //       // console.log('cookiesInCategory',cookiesInCategory);
+  //       cookiesInCategory.forEach(cookie => {
+  //         // console.log('name',cookie.name);
+  //         // console.log('value',cookie.value);
+  //         const cookieString = `${cookie.name}=${cookie.value}; path=/; expires=Thu, 31 Dec 2099 23:59:59 UTC`;
+  //         // console.log(cookieString);
+  //         document.cookie = cookieString;
+  //       });
+  //     }
+  //   });
+  // }
+
+  
+  function userPreferences(accept = '', Type) {
+    var consentType = {};
     const checkboxes = document.querySelectorAll('.gdprcript_checkbox_input');
-    const userPreferences = {};
-    checkboxes.forEach(checkbox => {
-      if (checkbox.checked) {
-        userPreferences[checkbox.value] = true;
-      }
-    });
-
-
-
-    fileData.forEach(cookie => {
-      const category = cookie.category || 'Uncategorized';
-      if (userPreferences[category]) {
-      } else {
-        console.log(`Not setting cookie for ${category}:`, cookie);
-      }
-    });
 
     checkboxes.forEach(checkbox => {
-      if (checkbox.checked) {
-        const category = checkbox.value;
-        const cookiesInCategory = fileData.filter(cookie => cookie.category === category);
-        cookiesInCategory.forEach(cookie => {
-          const cookieString = `${cookie.name}=${cookie.value}; path=/; expires=Thu, 31 Dec 2099 23:59:59 UTC`;
-          document.cookie = cookieString;
-        });
+      if(accept == ''){
+        if (checkbox.checked) {
+          consentType[checkbox.value] = true;
+        }else{
+          consentType[checkbox.value] = false;
+        }
+      }
+     else if (accept == 'true') {
+        consentType[checkbox.value] = true;
+        checkbox.checked = true;
       }
     });
+
+    
+
+    getIpAddressAndUserAgent()
+      .then(dataArray => {
+        consentType.IP = dataArray[0];
+        consentType.userAgent = dataArray[1];
+      })
+      .catch(error => {
+        console.error(error);
+      });
+
+    setAeon(consentType);
+    saveUserPreferences(consentType, Type);
+    setUserCookie();
+    showbadge();
   }
-
 
   function deleteCookies() {
     const checkboxes = document.querySelectorAll('.gdprcript_checkbox_input');
@@ -413,42 +491,41 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
 
-
-  function userPreferences(accept = '', Type) {
-    var consentType = {};
-    const checkboxes = document.querySelectorAll('.gdprcript_checkbox_input');
-
-    checkboxes.forEach(checkbox => {
-      if (checkbox.checked && accept == '') {
-        consentType[checkbox.value] = true;
-
-      } else if (accept == 'true') {
-        consentType[checkbox.value] = true;
-        checkbox.checked = true;
-      }
-    });
-
-    getIpAddressAndUserAgent()
-      .then(dataArray => {
-        consentType.IP = dataArray[0];
-        consentType.userAgent = dataArray[1];
-      })
-      .catch(error => {
-        console.error(error);
-      });
-
-    setAeon(consentType);
-    saveUserPreferences(consentType, Type);
-    setUserCookie();
-    showbadge();
+  function getDomainFromURL() {
+    var domain = window.location.hostname;
+    return domain.startsWith("www.") ? domain.substring(4) : domain;
   }
+
+
 
 
 
   function setAeon(consentType) {
-    document.cookie = `aeon-consent=consentid:SFdTT1lNNkdpQ2J5OUE4bXY1WWZOWHo1cDlnbExaSF=${JSON.stringify(consentType)}; expires=Thu, 31 Dec 2099 23:59:59 UTC; path=/`;
+    consentType.method = 'explicit';
+    consentType.region = 'es';
+    consentType.consentid='SFdTT1lNNkdpQ2J5OUE4bXY1WWZOWHo1cDlnbExaSF';
+
+    // Create a new object with 'consentid' first
+    let reorderedObj = {
+      consentid: consentType.consentid, // explicitly place 'consentid' first
+      ...consentType // spread the original object into the new object
+    };
+
+    // Convert object to JSON string
+    let jsonString = JSON.stringify(reorderedObj);
+
+    let formattedString = jsonString.replace(/"([^"]+)":/g, '$1:');
+    // document.cookie = `aeon-consent=consentid:SFdTT1lNNkdpQ2J5OUE4bXY1WWZOWHo1cDlnbExaSF=${JSON.stringify(consentType)}; expires=Thu, 31 Dec 2099 23:59:59 UTC; path=/`;
+    document.cookie = `aeon-consent=${formattedString}; expires=Thu, 31 Dec 2099 23:59:59 UTC; path=/`;
+   
+    // document.cookie = `aeon-consents=`+formattedString;
   }
 
+  function convertStringToJson(formattedString) {
+    formattedString = formattedString.replace(/(\w+):/g, '"$1":');
+    let jsonObject = JSON.parse(formattedString);
+    return jsonObject;
+  }
 
   function saveUserPreferences(consentType, Type) {
 
@@ -548,6 +625,8 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     document.cookie = cookieName + "=" + cookieValue + expires + "; path=/";
   }
+
+ 
 
 
   function getIpAddressAndUserAgent() {
