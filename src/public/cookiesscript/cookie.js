@@ -16,17 +16,15 @@ document.addEventListener('DOMContentLoaded', function () {
   function Customcookies() {
     var consentObject = {};
     consentObject = getConsentFromCookie();
-    
+
     var existingGtmScript = document.querySelector('script[src*="googletagmanager.com/gtm.js"]');
-    var gtmId='';
+    var gtmId = '';
     if (existingGtmScript) {
       gtmId = getGtmIdFromScriptSource(existingGtmScript.src);
     }
 
-
-
     if (consentObject.Rendimiento === true && consentObject.Marketing === true) {
- 
+
       window['ga-disable-' + gtmId] = false;
       window['ga-disable_XDNJGXBN4C'] = false;
       window['ga-disable_gcl_au'] = false;
@@ -35,7 +33,7 @@ document.addEventListener('DOMContentLoaded', function () {
       window['ga-disable_gid'] = false;
       window['ga-disable-UA-12959177-5'] = false;
     } else {
-  
+
       window['ga-disable-' + gtmId] = true;
       window['ga-disable_gcl_au'] = true;
       window['ga-disable_ga'] = true;
@@ -60,12 +58,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     if (consentObject.Rendimiento !== true && consentObject.Marketing !== true) {
-        consentType = {
-          'Rendimiento': false,
-          'Marketing': false,
-          'Necesario': true
-        };
-        setAeon(consentType);
+      consentType = {
+        'Rendimiento': false,
+        'Marketing': false,
+        'Necesario': true
+      };
+      setAeon(consentType);
     }
   }
 
@@ -90,29 +88,136 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
 
-  fetch(apiUrl + 'data.txt')
-    .then(response => {
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-      return response.text();
-    })
-    .then(data => {
+  checkDataFileOnServer();
 
-      var jsonData = JSON.parse(data);
+  function checkDataFileOnServer() {
+    var apiEndpoint = apiUrl + 'data.txt'; // Construct the API URL
 
-      consentDatas = getConsentFromCookie();
-      generateCheckboxes(jsonData, consentDatas);
-      categorizeAndDisplayCookies(jsonData);
-      fileData = jsonData;
-    })
-    .catch(error => {
-      console.error('Error fetching data:', error);
+    $.ajax({
+        type: "GET",
+        url: apiEndpoint,
+        cache: false,
+        success: function(data, textStatus, xhr) {
+            // Check if the response has content
+            var contentLength = xhr.getResponseHeader('Content-Length');
+            if (contentLength && parseInt(contentLength) > 0) {
+                // console.log("Data file found on the server.");
+            } else {
+                console.log("Data file not found on the server.");
+                fetchDataAndSaveToFile();
+            }
+        },
+        error: function(xhr, textStatus, errorThrown) {
+            // If there's an error (e.g., 404 Not Found), log it and fetch the data
+            console.log("Data file not found on the server.");
+            fetchDataAndSaveToFile();
+        }
     });
+}
 
 
-    
 
+
+  var DetailArr = [];
+
+  function fetchDataAndSaveToFile() {
+
+    var currentURL = window.location.hostname;
+    var proxyurl = apiUrl + 'proxy.php';
+    var domain = currentURL.replace(/(^\w+:|^)\/\/(www\.)?/, '').replace(/\/$/, '');
+    handleApiRequest(proxyurl, domain);
+  }
+
+  // Define a function to handle the API request
+  function handleApiRequest(proxyurl, domain) {
+    $.ajax({
+      url: proxyurl,
+      method: 'GET',
+      data: {
+        domain: domain
+      },
+      beforeSend: function () {
+        // console.log('Sending API request...');
+      },
+      success: function (data) {
+        var detailsArray = JSON.parse(data);
+        if (detailsArray && detailsArray.data && detailsArray.data.details) {
+          try {
+            var parsedDetails = JSON.parse(detailsArray.data.details);
+            DetailArr = parsedDetails; // Store the parsed details in the DetailArr array
+
+            var dataToSave = []; // Create an array to accumulate data for saving
+
+            // Loop through the parsed details and process each item
+            parsedDetails.forEach(function (details) {
+              var domain = details.domain;
+              var expiry = details.expiry;
+              var httpOnly = details.httpOnly;
+              var name = details.name;
+              var path = details.path;
+              var sameSite = details.sameSite;
+              var secure = details.secure;
+              var value = details.value;
+              var category = details.category;
+              var description = details.description;
+
+              // Push the details into the dataToSave array
+              dataToSave.push(details);
+            });
+
+            saveDataToServer(dataToSave);
+          } catch (error) {
+            // console.error('Error parsing JSON:', error);
+          }
+        } else {
+          // console.log('Response structure:', data);
+          // console.error('Invalid or empty response received.');
+        }
+      },
+      error: function (xhr, status, error) {
+        // console.error('Error fetching data:', error);
+      },
+      complete: function () {
+        // console.log('API request completed.');
+      }
+    });
+  }
+
+  function saveDataToServer(dataToSave) {
+    $.ajax({
+      url: apiUrl + 'save-data.php',
+      method: 'POST',
+      contentType: 'application/json',
+      data: JSON.stringify(dataToSave),
+      success: function (response) {
+        // console.log('Data saved successfully:', response);
+      },
+      error: function (xhr, status, error) {
+        // console.error('Error saving data:', error);
+      }
+    });
+  }
+
+
+  fetch(apiUrl + 'data.txt')
+  .then(response => {
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+    return response.text();
+  })
+  .then(data => {
+  
+    var jsonData = JSON.parse(data);
+
+    consentDatas = getConsentFromCookie();
+    generateCheckboxes(jsonData, consentDatas);
+    categorizeAndDisplayCookies(jsonData);
+    fileData = jsonData;
+  })
+  .catch(error => {
+    console.error('Error fetching data:', error);
+  });
 
   var manageGDscriptbtn = document.getElementById("gdprcript_manage");
   var gdprcript_badgetbtn = document.getElementById("gdprcript_badge");
@@ -214,28 +319,6 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
 
-  // function getConsentFromCookie() {
-
-  //   var cookies = document.cookie.split(';').map(cookie => cookie.trim());
-  //   var consentObject = {};
-
-  //   cookies.forEach(cookie => {
-  //     if (cookie.startsWith('aeon-consent=')) {
-  //       var consentString = cookie.substring('aeon-consent='.length); // Extract only the JSON string
-  //       try {
-  //         var jsonStringStartIndex = consentString.indexOf('{');
-  //         if (jsonStringStartIndex !== -1) {
-  //           consentString = consentString.substring(jsonStringStartIndex);
-  //         }
-  //         consentObject = JSON.parse(decodeURIComponent(consentString));
-  //       } catch (error) {
-  //         console.error('Error parsing aeon-consent cookie:', error);
-  //       }
-  //     }
-  //   });
-
-  //   return consentObject;
-  // }
 
   function getConsentFromCookie() {
     var cookies = document.cookie.split(';').map(cookie => cookie.trim());
@@ -246,13 +329,13 @@ document.addEventListener('DOMContentLoaded', function () {
         var consentString = cookie.substring('aeon-consent='.length); // Extract only the JSON string
         try {
           consentString = convertStringToJson(consentString);
-          consentObject= consentString;
+          consentObject = consentString;
         } catch (error) {
           console.error('Error parsing aeon-consent cookie:', error);
         }
       }
     });
-   
+
     return consentObject;
   }
 
@@ -340,7 +423,6 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
 
-
   function deleteAllCookiesExceptRejected() {
     var cookies = document.cookie.split(";");
 
@@ -351,7 +433,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
       // Exclude the 'cookiesRejected' cookie
       // if (name !== 'cookiesRejected') {
-        document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; domain=." + getDomainFromURL() + "; secure; samesite=strict";
+      document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; domain=." + getDomainFromURL() + "; secure; samesite=strict";
       // /}
     }
   }
@@ -390,74 +472,58 @@ document.addEventListener('DOMContentLoaded', function () {
   function saveCookies() {
     var Type = 'save';
     userPreferences('', Type);
-    // storeUserPreferences();
-
-    // dataLayer.push({
-    //   'event': 'saveEvent',
-    //   'action': 'save'
-    // });
-
+    storeUserPreferences();
   }
 
- 
-  // function storeUserPreferences() {
-  //   const checkboxes = document.querySelectorAll('.gdprcript_checkbox_input');
-   
-  //   const userPreferences = {};
-  //   checkboxes.forEach(checkbox => {
-  //     if (checkbox.checked) {
-  //       userPreferences[checkbox.value] = true;
-  //     }
-  //   });
 
+  function storeUserPreferences() {
+    const checkboxes = document.querySelectorAll('.gdprcript_checkbox_input');
+    const userPreferences = {};
+    checkboxes.forEach(checkbox => {
+      if (checkbox.checked) {
+        userPreferences[checkbox.value] = true;
+      }
+    });
 
-  //   console.log('userPreferences',userPreferences);
+    fileData.forEach(cookie => {
+      const category = cookie.category || 'Uncategorized';
+      if (userPreferences[category]) {
+      } else {
+        console.log(`Not setting cookie for ${category}:`, cookie);
+      }
+    });
 
-  //   fileData.forEach(cookie => {
-  //     const category = cookie.category || 'Uncategorized';
-  //     if (userPreferences[category]) {
-  //     } else {
-  //       console.log(`Not setting cookie for ${category}:`, cookie);
-  //     }
-  //   });
+    checkboxes.forEach(checkbox => {
+      if (checkbox.checked) {
+        const category = checkbox.value;
+        const cookiesInCategory = fileData.filter(cookie => cookie.category === category);
+        cookiesInCategory.forEach(cookie => {
+          const cookieString = `${cookie.name}=${cookie.value}; path=/; expires=Thu, 31 Dec 2099 23:59:59 UTC`;
+          document.cookie = cookieString;
+        });
+      }
+    });
+  }
 
-  //   checkboxes.forEach(checkbox => {
-  //     if (checkbox.checked) {
-  //       // console.log('checkboxes',checkbox);
-  //       const category = checkbox.value;
-  //       const cookiesInCategory = fileData.filter(cookie => cookie.category === category);
-  //       // console.log('cookiesInCategory',cookiesInCategory);
-  //       cookiesInCategory.forEach(cookie => {
-  //         // console.log('name',cookie.name);
-  //         // console.log('value',cookie.value);
-  //         const cookieString = `${cookie.name}=${cookie.value}; path=/; expires=Thu, 31 Dec 2099 23:59:59 UTC`;
-  //         // console.log(cookieString);
-  //         document.cookie = cookieString;
-  //       });
-  //     }
-  //   });
-  // }
-
-  
   function userPreferences(accept = '', Type) {
     var consentType = {};
     const checkboxes = document.querySelectorAll('.gdprcript_checkbox_input');
 
     checkboxes.forEach(checkbox => {
-      if(accept == ''){
+      if (accept == '') {
         if (checkbox.checked) {
           consentType[checkbox.value] = true;
-        }else{
+        } else {
           consentType[checkbox.value] = false;
         }
       }
-     else if (accept == 'true') {
+      else if (accept == 'true') {
         consentType[checkbox.value] = true;
         checkbox.checked = true;
       }
     });
 
-    
+
 
     getIpAddressAndUserAgent()
       .then(dataArray => {
@@ -503,7 +569,7 @@ document.addEventListener('DOMContentLoaded', function () {
   function setAeon(consentType) {
     consentType.method = 'explicit';
     consentType.region = 'es';
-    consentType.consentid='SFdTT1lNNkdpQ2J5OUE4bXY1WWZOWHo1cDlnbExaSF';
+    consentType.consentid = 'SFdTT1lNNkdpQ2J5OUE4bXY1WWZOWHo1cDlnbExaSF';
 
     // Create a new object with 'consentid' first
     let reorderedObj = {
@@ -517,7 +583,7 @@ document.addEventListener('DOMContentLoaded', function () {
     let formattedString = jsonString.replace(/"([^"]+)":/g, '$1:');
     // document.cookie = `aeon-consent=consentid:SFdTT1lNNkdpQ2J5OUE4bXY1WWZOWHo1cDlnbExaSF=${JSON.stringify(consentType)}; expires=Thu, 31 Dec 2099 23:59:59 UTC; path=/`;
     document.cookie = `aeon-consent=${formattedString}; expires=Thu, 31 Dec 2099 23:59:59 UTC; path=/`;
-   
+
     // document.cookie = `aeon-consents=`+formattedString;
   }
 
@@ -606,9 +672,9 @@ document.addEventListener('DOMContentLoaded', function () {
     $.ajax({
       type: "POST",
       url: apiUrl + 'useraction.php',
-      data: { 'useraction':true },
+      data: { 'useraction': true },
       success: function (response) {
-        setCookie('type', 'useraction',7);
+        setCookie('type', 'useraction', 7);
       },
       error: function (error) {
         console.error("An error occurred:", error);
@@ -616,17 +682,17 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  function setCookie(cookieName,cookieValue,days){
+  function setCookie(cookieName, cookieValue, days) {
     var expires = "";
     if (days) {
-        var date = new Date();
-        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-        expires = "; expires=" + date.toUTCString();
+      var date = new Date();
+      date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+      expires = "; expires=" + date.toUTCString();
     }
     document.cookie = cookieName + "=" + cookieValue + expires + "; path=/";
   }
 
- 
+
 
 
   function getIpAddressAndUserAgent() {
